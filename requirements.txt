@@ -18,3 +18,4 @@ moviepy==2.1.2
 progress
 questionary
 edge-tts
+pydantic==2.10.6#corrige problema Gradio ao subir o projeto no Ubuntu 22
