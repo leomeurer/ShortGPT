@@ -6,12 +6,11 @@ def generate_title_description_dict(content):
     chat, system = gpt_utils.load_local_yaml_prompt('prompt_templates/yt_title_description.yaml')
     chat = chat.replace("<<CONTENT>>", f"{content}")
     
-    max_attempts = 3  # Limite de tentativas para prevenir loop infinito
+    max_attempts = 3 
     attempts = 0
     
     while (out["title"] == "" or out["description"] == "") and attempts < max_attempts:
         attempts += 1
-        print(f"Generating YouTube metadata, attempt {attempts}/{max_attempts}...")
         
         try:
             result = gpt_utils.llm_completion(chat_prompt=chat, system=system, temp=1)
@@ -32,7 +31,6 @@ def generate_title_description_dict(content):
                 out["description"] = content_preview.replace('\n', ' ').strip()
                 print("Using fallback title and description from content")
         except Exception as e:
-            print(f"Error generating metadata on attempt {attempts}: {e}")
             if attempts == max_attempts:
                 # Se falhar completamente, lançar exceção com contexto
                 raise Exception(f"Failed to generate YouTube metadata after {max_attempts} attempts: {e}")
