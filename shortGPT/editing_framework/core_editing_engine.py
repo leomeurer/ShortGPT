@@ -1,4 +1,5 @@
 from urllib.error import HTTPError
+from urllib.parse import urlparse
 from shortGPT.config.path_utils import get_program_path
 import os
 from shortGPT.config.path_utils import handle_path
@@ -192,7 +193,7 @@ class CoreEditingEngine:
     # Process individual asset types
     def process_video_asset(self, asset: Dict[str, Any]) -> VideoFileClip:
         params = {
-            'filename': handle_path(asset['parameters']['url'])
+            'filename': handle_path(asset['parameters']['url'], extension='.mp4')
         }
         if 'audio' in asset['parameters']:
             params['audio'] = asset['parameters']['audio']
@@ -200,7 +201,16 @@ class CoreEditingEngine:
         return self.process_common_visual_actions(clip, asset['actions'])
 
     def process_image_asset(self, asset: Dict[str, Any]) -> ImageClip:
-        clip = ImageClip(asset['parameters']['url'])
+        image_url = asset['parameters']['url']
+        
+        # Determinar extensão apropriada
+        parsed = urlparse(image_url)
+        path = parsed.path
+        ext = os.path.splitext(path)[1]
+        
+        image_path = handle_path(image_url, extension=ext)
+        
+        clip = ImageClip(image_path)
         return self.process_common_visual_actions(clip, asset['actions'])
 
     def process_text_asset(self, asset: Dict[str, Any]) -> TextClip:
@@ -225,7 +235,27 @@ class CoreEditingEngine:
         return self.process_common_visual_actions(clip, asset['actions'])
 
     def process_audio_asset(self, asset: Dict[str, Any]) -> AudioFileClip:
-        clip = AudioFileClip(asset['parameters']['url'])
+        from shortGPT.config.path_utils import handle_path
+        
+        audio_url = asset['parameters']['url']
+        # Baixar áudio localmente se for URL
+        if audio_url.startswith(('http://', 'https://')):
+            # Determinar extensão apropriada
+            if '.mp3' in audio_url:
+                ext = '.mp3'
+            elif '.m4a' in audio_url:
+                ext = '.m4a'
+            elif '.wav' in audio_url:
+                ext = '.wav'
+            else:
+                ext = '.mp3'  # fallback padrão
+            
+            print(f"Downloading audio asset: {audio_url[:50]}...")
+            audio_path = handle_path(audio_url, extension=ext)
+        else:
+            audio_path = audio_url
+        
+        clip = AudioFileClip(audio_path)
         return self.process_audio_actions(clip, asset['actions'])
     
     def __normalize_image(self, clip):
