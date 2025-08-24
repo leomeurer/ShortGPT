@@ -25,7 +25,10 @@ build
 setup
 test.ipynb
 .venv/
+venv/
 MANIFEST.in
 schema.json
 video.mp4
 Untitled-1.ipynb
+Python-3.10.3/
+tests/
